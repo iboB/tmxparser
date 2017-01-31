@@ -15,63 +15,20 @@ configure_file(
   "${PROJECT_BINARY_DIR}/Tmx.h"
   )
 
-option(USE_MINIZ "Use miniz.c instead of zlib" OFF)
+add_definitions(-DUSE_MINIZ)
 
-if (USE_MINIZ)
-    add_definitions(-DUSE_MINIZ)
-endif (USE_MINIZ)
+if(MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
+
 
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 file(GLOB_RECURSE HEADERS ${PROJECT_SOURCE_DIR}/src/*.h
                           ${PROJECT_BINARY_DIR}/Tmx.h)
 
-if (USE_MINIZ)
-    set(SOURCES ${SOURCES} ${PROJECT_SOURCE_DIR}/src/miniz.c)
-endif (USE_MINIZ)
+set(SOURCES ${SOURCES} ${PROJECT_SOURCE_DIR}/src/miniz.c)
 
-find_package(TinyXML2)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../tinyxml2)
+set(SOURCES ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/../tinyxml2/tinyxml2.cpp)
 
-if (NOT USE_MINIZ)
-    find_package(ZLIB)
-endif (NOT USE_MINIZ)
-
-set(LIB_CFLAGS "-pedantic -Wall -Werror=strict-prototypes -Werror=old-style-definition -Werror=missing-prototypes")
-
-if (NOT USE_MINIZ)
-    list(APPEND ${LIB_CFLAGS} "-Werror")
-endif (NOT USE_MINIZ)
-
-set(EXAMPLE_CFLAGS "-pedantic -Werror -Wall")
-#include_directories("${PROJECT_SOURCE_DIR}/include")
-
-add_library(tmxparser_static STATIC ${SOURCES} ${HEADERS})
-set_target_properties(tmxparser_static PROPERTIES
-  OUTPUT_NAME tmxparser
-  COMPILE_FLAGS ${LIB_CFLAGS})
-
-add_library(tmxparser SHARED ${SOURCES} ${HEADERS})
-set_target_properties(tmxparser PROPERTIES
-  SOVERSION ${VERSION_MAJOR}
-  VERSION ${VERSION}
-  COMPILE_FLAGS ${LIB_CFLAGS})
-
-target_link_libraries(tmxparser ${TINYXML2_LIBRARIES})
-include_directories(${TINYXML2_INCLUDE_DIR})
-
-if (NOT USE_MINIZ)
-    target_link_libraries(tmxparser ${ZLIB_LIBRARIES})
-    include_directories(${ZLIB_INCLUDE_DIRS})
-endif (NOT USE_MINIZ)
-
-add_executable(run_tests test/test.cpp)
-set_target_properties(run_tests PROPERTIES
-  COMPILE_FLAGS ${EXAMPLE_CFLAGS})
-target_link_libraries(run_tests tmxparser ${TINYXML2_LIBRARIES})
-include_directories("${PROJECT_BINARY_DIR}")
-include_directories("${PROJECT_SOURCE_DIR}/src")
-
-install(FILES ${HEADERS} DESTINATION include/tmxparser)
-install(TARGETS tmxparser tmxparser_static DESTINATION lib)
-
-configure_file(src/tmxparser.pc.in tmxparser.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tmxparser.pc DESTINATION lib/pkgconfig)
+add_library(tmxparser STATIC ${SOURCES} ${HEADERS})
