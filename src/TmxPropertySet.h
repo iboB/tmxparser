@@ -63,7 +63,7 @@ namespace Tmx
         bool GetBoolProperty(const std::string &name, bool defaultValue = false) const;
 
         // Returns the amount of properties.
-        int GetSize() const { return properties.size(); }
+        int GetSize() const { return int(properties.size()); }
 
         // Checks if a property exists in the set.
         bool HasProperty( const std::string& name ) const;

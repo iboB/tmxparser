@@ -40,9 +40,9 @@
 #include "TmxMap.h"
 #include "TmxTileset.h"
 
-namespace Tmx 
+namespace Tmx
 {
-    TileLayer::TileLayer(const Map *_map) 
+    TileLayer::TileLayer(const Map *_map)
         : Layer(_map, std::string(), 0, 0, _map->GetWidth(), _map->GetHeight(), 1.0f, true, TMX_LAYERTYPE_TILE)
         , tile_map(NULL)  // Set the map to null to specify that it is not yet allocated.
         , encoding(TMX_ENCODING_XML)
@@ -50,7 +50,7 @@ namespace Tmx
     {
     }
 
-    TileLayer::~TileLayer() 
+    TileLayer::~TileLayer()
     {
         // If the tile map is allocated, delete it from the memory.
         if (tile_map)
@@ -60,10 +60,10 @@ namespace Tmx
         }
     }
 
-    void TileLayer::Parse(const tinyxml2::XMLNode *tileLayerNode) 
+    void TileLayer::Parse(const tinyxml2::XMLNode *tileLayerNode)
     {
         const tinyxml2::XMLElement *tileLayerElem = tileLayerNode->ToElement();
-    
+
         // Read the attributes.
         name = tileLayerElem->Attribute("name");
 
@@ -75,7 +75,7 @@ namespace Tmx
 
         // Read the properties.
         const tinyxml2::XMLNode *propertiesNode = tileLayerNode->FirstChildElement("properties");
-        if (propertiesNode) 
+        if (propertiesNode)
         {
             properties.Parse(propertiesNode);
         }
@@ -90,33 +90,33 @@ namespace Tmx
         const char *compressionStr = dataElem->Attribute("compression");
 
         // Check for encoding.
-        if (encodingStr) 
+        if (encodingStr)
         {
-            if (!strcmp(encodingStr, "base64")) 
+            if (!strcmp(encodingStr, "base64"))
             {
                 encoding = TMX_ENCODING_BASE64;
-            } 
-            else if (!strcmp(encodingStr, "csv")) 
+            }
+            else if (!strcmp(encodingStr, "csv"))
             {
                 encoding = TMX_ENCODING_CSV;
             }
         }
 
         // Check for compression.
-        if (compressionStr) 
+        if (compressionStr)
         {
-            if (!strcmp(compressionStr, "gzip")) 
+            if (!strcmp(compressionStr, "gzip"))
             {
                 compression = TMX_COMPRESSION_GZIP;
-            } 
-            else if (!strcmp(compressionStr, "zlib")) 
+            }
+            else if (!strcmp(compressionStr, "zlib"))
             {
                 compression = TMX_COMPRESSION_ZLIB;
             }
         }
-        
+
         // Decode.
-        switch (encoding) 
+        switch (encoding)
         {
         case TMX_ENCODING_XML:
             ParseXML(dataElem);
@@ -132,15 +132,15 @@ namespace Tmx
         }
     }
 
-    void TileLayer::ParseXML(const tinyxml2::XMLNode *dataNode) 
+    void TileLayer::ParseXML(const tinyxml2::XMLNode *dataNode)
     {
         const tinyxml2::XMLNode *tileNode = dataNode->FirstChildElement("tile");
         int tileCount = 0;
 
-        while (tileNode) 
+        while (tileNode)
         {
             const tinyxml2::XMLElement *tileElem = tileNode->ToElement();
-            
+
             unsigned gid = 0;
 
             // Read the Global-ID of the tile.
@@ -169,7 +169,7 @@ namespace Tmx
         }
     }
 
-    void TileLayer::ParseBase64(const std::string &innerText) 
+    void TileLayer::ParseBase64(const std::string &innerText)
     {
     	std::string testText = innerText;
     	Util::Trim( testText );
@@ -179,28 +179,28 @@ namespace Tmx
         // Temporary array of gids to be converted to map tiles.
         unsigned *out = 0;
 
-        if (compression == TMX_COMPRESSION_ZLIB) 
+        if (compression == TMX_COMPRESSION_ZLIB)
         {
             // Use zlib to uncompress the tile layer into the temporary array of tiles.
             uLongf outlen = width * height * 4;
             out = (unsigned *)malloc(outlen);
             uncompress(
-                (Bytef*)out, &outlen, 
-                (const Bytef*)text.c_str(), text.size());
-    
-        } 
-        else if (compression == TMX_COMPRESSION_GZIP) 
+                (Bytef*)out, &outlen,
+                (const Bytef*)text.c_str(), mz_ulong(text.size()));
+
+        }
+        else if (compression == TMX_COMPRESSION_GZIP)
         {
             // Use the utility class for decompressing (which uses zlib)
             out = (unsigned *)Util::DecompressGZIP(
-                text.c_str(), 
-                text.size(), 
+                text.c_str(),
+                int(text.size()),
                 width * height * 4);
-        } 
-        else 
+        }
+        else
         {
             out = (unsigned *)malloc(text.size());
-        
+
             // Copy every gid into the temporary array since
             // the decoded string is an array of 32-bit integers.
             memcpy(out, text.c_str(), text.size());
@@ -233,16 +233,16 @@ namespace Tmx
         free(out);
     }
 
-    void TileLayer::ParseCSV(const std::string &innerText) 
+    void TileLayer::ParseCSV(const std::string &innerText)
     {
         // Duplicate the string for use with C stdio.
-        char *csv = strdup(innerText.c_str());
-        
+        char *csv = _strdup(innerText.c_str());
+
         // Iterate through every token of ';' in the CSV string.
         char *pch = strtok(csv, ",");
         int tileCount = 0;
-        
-        while (pch) 
+
+        while (pch)
         {
             unsigned gid;
             sscanf(pch, "%u", &gid);
