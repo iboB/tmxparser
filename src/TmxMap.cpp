@@ -152,11 +152,11 @@ namespace Tmx
         Parse( mapNode );
     }
 
-    void Map::ParseText(const string &text)
+    void Map::ParseText(const char* text, size_t textLength)
     {
         // Create a tiny xml document and use it to parse the text.
         tinyxml2::XMLDocument doc;
-        doc.Parse(text.c_str());
+        doc.Parse(text, textLength);
 
         // Check for parsing errors.
         if (doc.Error())
