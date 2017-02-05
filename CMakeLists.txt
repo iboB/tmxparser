@@ -2,18 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(tmxparser)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
-set(VERSION_MAJOR 2)
-set(VERSION_MINOR 0)
-set(VERSION_PATCH 1)
-
-set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 set(CMAKE_CXX_STANDARD 11)
-
-message("Configuring tmxparser version ${VERSION}")
-configure_file(
-  "${PROJECT_SOURCE_DIR}/src/Tmx.h.in"
-  "${PROJECT_BINARY_DIR}/Tmx.h"
-  )
 
 add_definitions(-DUSE_MINIZ)
 
@@ -23,8 +12,7 @@ endif()
 
 
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-file(GLOB_RECURSE HEADERS ${PROJECT_SOURCE_DIR}/src/*.h
-                          ${PROJECT_BINARY_DIR}/Tmx.h)
+file(GLOB_RECURSE HEADERS ${PROJECT_SOURCE_DIR}/src/*.h)
 
 set(SOURCES ${SOURCES} ${PROJECT_SOURCE_DIR}/src/miniz.c)
 
