@@ -7,7 +7,9 @@ set(CMAKE_CXX_STANDARD 11)
 add_definitions(-DUSE_MINIZ)
 
 if(MSVC)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
+else()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 endif()
 
 
